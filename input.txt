@@ -1,0 +1,5 @@
+height 10
+width 20
+
+velocity_distribution gaussian
+initial_density dam_break
