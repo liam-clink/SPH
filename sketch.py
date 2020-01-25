@@ -12,11 +12,11 @@ def pressure(rho):
 
 
 # A minimum of 33 neighbors in three dimensions is necessary for good accuracy.
-
-def kernel(separation, range):
+# An idea for this is to periodically adjust the radius using binary search
+def kernel(separation, limit_distance):
     # Kernel interpolant
     # Only needed for interpolating values, including density initialization
-    q = np.linalg.norm(separation) / range
+    q = np.linalg.norm(separation) / limit_distance
 
     if 0 <= q <= 0.5:
         return 8 / np.pi * (1 - 6 * (q ** 2 - q ** 3))
@@ -26,10 +26,10 @@ def kernel(separation, range):
         return 0
 
 
-def grad_kernel(separation, range):
+def grad_kernel(separation, limit_distance):
     # Gradient of the kernel
     # Used in the time evolution equations.
-    q = np.linalg.norm(separation) / range
+    q = np.linalg.norm(separation) / limit_distance
     q_hat = separation / q
 
     if 0 <= q <= 0.5:
