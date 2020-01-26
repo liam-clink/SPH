@@ -7,6 +7,7 @@ rho_0 = 1000  # kg/m^3
 P_0 = 101325  # Pa
 
 
+# Tate Monaghan equation of state
 def pressure(rho):
     return K_0 / K_0_prime * ((rho / rho_0) ** K_0_prime - 1) + P_0
 
@@ -14,7 +15,7 @@ def pressure(rho):
 # A minimum of 33 neighbors in three dimensions is necessary for good accuracy.
 # An idea for this is to periodically adjust the radius using binary search
 def kernel(separation, limit_distance):
-    # Kernel interpolant
+    # Kernel cubic interpolant
     # Only needed for interpolating values, including density initialization
     q = np.linalg.norm(separation) / limit_distance
 
