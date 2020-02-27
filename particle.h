@@ -10,15 +10,17 @@
 
 struct Particle
 {
-    double mass;
     std::array<double,DIM> position;
     std::array<double,DIM> velocity;
 };
 
 struct SPHParticle : Particle
 {
-        double range;
+    double density;
+    double range;
+    double pressure;
 };
 
 // While in principle the kernel shape could vary from particle to particle,
 // this is not sensible and is never done, so the kernel is an attribute of the simulation
+// This is because having a copy of the kernel for every particle would be pointless.
