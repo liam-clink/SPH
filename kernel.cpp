@@ -6,15 +6,27 @@
 // commonly use
 
 #include "kernel.h"
+#include <armadillo>
 
 #ifndef PI
 #include <cmath>
-#define PI 4*atan(1.);
+#define PI 4*atan(1.)
 #endif
 
 // SPH
 
-double cubic_sph_kernel(double q)
+// q is the scaled distance. q=1 is the range of influence.
+double cubic_sph_kernel_2d(double q)
+{
+    if (0 <= q <= 0.5)
+        return 10. / (3.*PI) * (1. - 6. * (q*q - q*q*q));
+    else if (q <= 1)
+        return 20. / (3.*PI) * (1. - q) * (1. - q) * (1. - q);
+    else
+        return 0.;
+}
+
+double cubic_sph_kernel_3d(double q)
 {
     if (0 <= q <= 0.5)
         return 8. / PI * (1. - 6. * (q*q - q*q*q));
@@ -24,14 +36,12 @@ double cubic_sph_kernel(double q)
         return 0.;
 }
 
-// The dimension is fixed to 3 because the normalization is only good
-// for 3 dimensional SPH
-std::array<double, 3> gradient_cubic_sph_kernel(double scaled_distance)
+arma::vec gradient_cubic_sph_kernel_2d(double q, arma::vec q_hat)
 {
-    boi;
+    return q_hat;
 }
 
-
+/*
 # Gradient of the kernel
 # Used in the time evolution equations.
 q = np.linalg.norm(separation) / limit_distance
@@ -45,4 +55,4 @@ q_hat = separation / q
         return 0 * q_hat
 
 
-
+*/

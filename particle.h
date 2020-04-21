@@ -6,12 +6,12 @@
 
 #pragma once
 
-#include <array>
+#include <armadillo>
 
 struct Particle
 {
-    std::array<double,DIM> position;
-    std::array<double,DIM> velocity;
+    arma::vec position;
+    arma::vec velocity;
 };
 
 struct SPHParticle : Particle

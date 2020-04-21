@@ -6,6 +6,8 @@
 // to do the computation, so that the main function only has the job
 // of initializing simulations as instructed by the user.
 
+#include "particle.h"
+#include "kernel.h"
 
 class Simulation
 {

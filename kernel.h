@@ -7,8 +7,7 @@
 //
 
 #pragma once
-
-#include <array>
+#include <armadillo>
 
 // SPH
 
@@ -16,9 +15,10 @@
 // An idea for this is to periodically adjust the radius using binary search
 // Kernel cubic interpolant
 // Only needed for interpolating values, including density initialization
- 
-// This kernel is normalized for 3 dimensional simulation
-double cubic_sph_kernel(double scaled_distance);
-std::array<double, 3> gradient_cubic_sph_kernel(double scaled_distance);
+
+// q is the scaled distance, such that q=1 is the range of influence
+// This kernel is normalized for 2 dimensional simulation
+double cubic_sph_kernel_2d(double q);
+arma::vec gradient_cubic_sph_kernel_2d(double q, arma::vec q_hat);
 
 
