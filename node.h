@@ -7,24 +7,18 @@
 
 #include <vector>
 
-class Node
+struct Node
 {
-private:
     std::vector<Node*> children_;
-protected:
-    Node() {}
-public:
-    void add(Node* ptr) {children_.pushback(ptr);}
+    void add(Node* ptr) {children_.push_back(ptr);}
     virtual ~Node() {}
 };
 
 template <class Cargo>
-class CargoNode
+struct CargoNode
     : public Node
 {
-private:
     Cargo cargo_;
-public:
-    CargoNode(): cargo_() {}
+    CargoNode<Cargo>(Cargo cargo): cargo_(cargo) {}
 };
 
