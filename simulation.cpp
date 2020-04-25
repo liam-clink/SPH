@@ -13,17 +13,16 @@
 // Make constructor able to take terminal or file input
 Simulation::Simulation()
 {
-    std::ifstream ifile;
-    ifile.open("input.txt");
+    is.open("input.txt");
     std::vector<std::string> tokens;
 
     // Initialize simulation box
-    tokens = next_line(ifile);
+    tokens = next_line();
     if (tokens[0] != "height")
         throw std::invalid_argument("line 0 is not height");
     this->height = std::stod(tokens[1]);
 
-    tokens = next_line(ifile);
+    tokens = next_line();
     if (tokens[0] != "width")
         throw std::invalid_argument("line 1 is not width");
     this->width = std::stod(tokens[1]);
@@ -32,36 +31,50 @@ Simulation::Simulation()
         << " Width: " << this->width << std::endl;
 
     // Initialize particles
-    // After each particle is added, the density needs to be subtracted from appropriately
-    // to ensure good sampling
     unsigned int particle_num;
-    tokens = next_line(ifile);
+    tokens = next_line();
     if (tokens[0] != "particle_num")
         throw std::invalid_argument("line 2 is not particle_num");
     particle_num = stoi(tokens[1]);
-    std::vector<SPHParticle> particle_list(particle_num);
+    this->particle_list = std::vector<SPHParticle>(particle_num);
     std::cout << "Number of Particles: " << particle_num << std::endl;
 
+    // Random number generation, for sampling particles uniformly
+    std::default_random_engine generator;
+    std::uniform_real_distribution<double> distribution(0.,1.);
+    
     for (unsigned int i=0; i<particle_num; i++)
+    {
         particle_list[i] = SPHParticle();
+        particle_list[i].position = 
+            { this->width*distribution(generator),
+              this->height*distribution(generator) };
+        particle_list[i].velocity = {0.,0.};
+    }
 
-    ifile.close();
+    // Dump the initial state
+    system("mkdir -p data/positions");
+    system("mkdir -p data/velocities");
+    dump_state();
+
+    this->is.close();
 }
 
 Simulation::~Simulation()
 {
+    this->os.close();
     std::cout << "Done!" << std::endl;
 }
 
 // Filter out comment lines, skips through file until a non-comment line
 // is reached
-std::vector<std::string> next_line(std::ifstream& is)
+std::vector<std::string> Simulation::next_line()
 {
     // Find the next line that isn't a comment
     std::string line;
     while(true)
     {
-        std::getline(is,line);
+        std::getline(this->is,line);
         if (line.length() == 0 || line[0] == '#')
             continue;
         else
@@ -84,3 +97,25 @@ std::vector<std::string> next_line(std::ifstream& is)
     return tokenized_line;
 }
 
+int Simulation::dump_state()
+{
+    this->os.open("data/positions/"+std::to_string(this->timestep)+".csv");
+
+    for (int i=0; i<this->particle_list.size(); i++)
+    {
+        os << i << ','
+           << this->particle_list[i].position[0] << ','
+           << this->particle_list[i].position[1] << std::endl;
+    }
+
+    this->os.open("data/velocities/"+std::to_string(this->timestep)+".csv");
+
+    for (int i=0; i<this->particle_list.size(); i++)
+    {
+        os << i << ','
+           << this->particle_list[i].velocity[0] << ','
+           << this->particle_list[i].velocity[1] << std::endl;
+    }
+
+    return 0;
+}

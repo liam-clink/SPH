@@ -24,6 +24,7 @@ public:
 private:
     std::vector<SPHParticle> particle_list;
     double width, height;
+    unsigned int timestep = 0;
     // The reason for using "Nodes" is that it allows the simulation to
     // dynamically add any members as necessary, instead of allocating all
     // possible members. A root node does need to be declared, and then
@@ -32,7 +33,10 @@ private:
 
     //void grid_ptr;
     //void kernel_ptr;
-};
 
-std::vector<std::string> next_line(std::ifstream&);
+    int dump_state();
+    std::ifstream is;
+    std::ofstream os;
+    std::vector<std::string> next_line();
+};
 

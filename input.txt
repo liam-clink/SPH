@@ -2,5 +2,4 @@ height 10
 width 20
 particle_num 10
 
-velocity_distribution gaussian
-initial_density dam_break
+output_dir data
