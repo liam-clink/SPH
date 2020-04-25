@@ -21,10 +21,14 @@ public:
     Simulation();
     ~Simulation();
 
+    int run();
 private:
     std::vector<SPHParticle> particle_list;
     double width, height;
-    unsigned int timestep = 0;
+    unsigned int step = 0;
+    unsigned int max_step;
+    double dt;
+    double duration;
     // The reason for using "Nodes" is that it allows the simulation to
     // dynamically add any members as necessary, instead of allocating all
     // possible members. A root node does need to be declared, and then

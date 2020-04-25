@@ -57,14 +57,39 @@ Simulation::Simulation()
     system("mkdir -p data/velocities");
     dump_state();
 
+    // Set up time
+    tokens = next_line();
+    if (tokens[0] != "timestep")
+        throw std::invalid_argument("line 3 is not timestep");
+    this->dt = stod(tokens[1]);
+    tokens = next_line();
+    if (tokens[0] != "duration")
+        throw std::invalid_argument("line 4 is not duration");
+    this->duration = stod(tokens[1]);
+    this->max_step = int(duration/dt);
+
     this->is.close();
 }
+
+
+int Simulation::run()
+{
+    for(this->step=0; this->step<this->max_step; this->step++)
+    {
+        // run
+        std::cout << "step " << step << '\n';
+    }
+
+    return 0;
+}
+
 
 Simulation::~Simulation()
 {
     this->os.close();
     std::cout << "Done!" << std::endl;
 }
+
 
 // Filter out comment lines, skips through file until a non-comment line
 // is reached
@@ -97,9 +122,10 @@ std::vector<std::string> Simulation::next_line()
     return tokenized_line;
 }
 
+
 int Simulation::dump_state()
 {
-    this->os.open("data/positions/"+std::to_string(this->timestep)+".csv");
+    this->os.open("data/positions/"+std::to_string(this->step)+".csv");
 
     for (int i=0; i<this->particle_list.size(); i++)
     {
@@ -108,7 +134,7 @@ int Simulation::dump_state()
            << this->particle_list[i].position[1] << std::endl;
     }
 
-    this->os.open("data/velocities/"+std::to_string(this->timestep)+".csv");
+    this->os.open("data/velocities/"+std::to_string(this->step)+".csv");
 
     for (int i=0; i<this->particle_list.size(); i++)
     {
@@ -119,3 +145,4 @@ int Simulation::dump_state()
 
     return 0;
 }
+
