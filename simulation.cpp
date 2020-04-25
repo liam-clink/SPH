@@ -9,6 +9,7 @@
 #include <typeinfo>
 #include <fstream>
 #include <stdexcept>
+#include <cmath> // for zero filling
 
 // Make constructor able to take terminal or file input
 Simulation::Simulation()
@@ -30,7 +31,7 @@ Simulation::Simulation()
     std::cout << "Height: " << this->height
         << " Width: " << this->width << std::endl;
 
-    // Initialize particles
+    // Get number of particles and initialize particle_list
     unsigned int particle_num;
     tokens = next_line();
     if (tokens[0] != "particle_num")
@@ -39,10 +40,11 @@ Simulation::Simulation()
     this->particle_list = std::vector<SPHParticle>(particle_num);
     std::cout << "Number of Particles: " << particle_num << std::endl;
 
-    // Random number generation, for sampling particles uniformly
+    // Random number generation, for sampling particles uniformly in space
     std::default_random_engine generator;
     std::uniform_real_distribution<double> distribution(0.,1.);
     
+    // Fill particle list
     for (unsigned int i=0; i<particle_num; i++)
     {
         particle_list[i] = SPHParticle();
@@ -52,10 +54,9 @@ Simulation::Simulation()
         particle_list[i].velocity = {0.,0.};
     }
 
-    // Dump the initial state
+    // Set up directories for data dumping
     system("mkdir -p data/positions");
     system("mkdir -p data/velocities");
-    dump_state();
 
     // Set up time
     tokens = next_line();
@@ -76,8 +77,11 @@ int Simulation::run()
 {
     for(this->step=0; this->step<this->max_step; this->step++)
     {
+        dump_state();
+
         // run
         std::cout << "step " << step << '\n';
+
     }
 
     return 0;
@@ -125,7 +129,13 @@ std::vector<std::string> Simulation::next_line()
 
 int Simulation::dump_state()
 {
-    this->os.open("data/positions/"+std::to_string(this->step)+".csv");
+    // Do zero filling for filename
+    std::string step_string = std::to_string(this->step);
+    step_string.insert(step_string.begin(),
+            log10(this->max_step)+1 - step_string.length(), '0');
+
+    // Output position data
+    this->os.open("data/positions/"+step_string+".csv");
 
     for (int i=0; i<this->particle_list.size(); i++)
     {
@@ -133,8 +143,11 @@ int Simulation::dump_state()
            << this->particle_list[i].position[0] << ','
            << this->particle_list[i].position[1] << std::endl;
     }
+    
+    os.close();
 
-    this->os.open("data/velocities/"+std::to_string(this->step)+".csv");
+    // Output velocity data
+    this->os.open("data/velocities/"+step_string+".csv");
 
     for (int i=0; i<this->particle_list.size(); i++)
     {
@@ -142,6 +155,7 @@ int Simulation::dump_state()
            << this->particle_list[i].velocity[0] << ','
            << this->particle_list[i].velocity[1] << std::endl;
     }
+    os.close();
 
     return 0;
 }
