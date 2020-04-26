@@ -19,6 +19,8 @@ principle in my coding.
 1. First thing to do is get the kernel interpolation working correctly, and output the results for plotting.
 This requires that the simulation initialize the particles, and sample the interpolation for output.
 This also requires planning the format of the output file.
+For initializing the particle positions, divide the total volume by the number of particles and use that
+to get an initial guess at range of influence. Or something along those lines.
 
 2. After this, it will be necessary to calculate the force from each particle given the current state,
 which should also be plotted and output appropriately. This initial force should just be the pressure force,

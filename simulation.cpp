@@ -6,6 +6,7 @@
 //
 
 #include "simulation.h"
+#include "boundary.h"
 #include <typeinfo>
 #include <fstream>
 #include <stdexcept>
