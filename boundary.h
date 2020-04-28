@@ -5,6 +5,8 @@
 // boundary conditions
 //
 
+#pragma once
+
 #include <armadillo>
 #include <cmath>
 
@@ -14,15 +16,18 @@
 // of the triangle, and the denominator is the length of the line.
 double dist_to_line(const arma::vec& position,
                     const arma::vec& point1,
-                    const arma::vec& point2)
-{
-    double numerator = fabs( (point2(1)-point1(1))*position(0)
-                             - (point2(0)-point1(0))*position(1)
-                             + point2(0)*point1(1) - point2(1)*point1(0) );
+                    const arma::vec& point2);
 
-    double denominator = sqrt( (point2(1)-point1(1))*(point2(1)-point1(1))
-                             + (point2(0)-point1(0))*(point2(0)-point1(0)) );
+// Test if a point is between two other points. This is useful for checking
+// if a ray in raycasting intersects a vertex
+int point_between_points(const arma::vec& point1,
+                         const arma::vec& point2,
+                         const arma::vec& point3);
 
-    return numerator / denominator;
-}
+// Use raycasting to determine whether a point is inside a polygon
+int point_inside_polygon(const arma::vec& point, const arma::mat& vertices);
 
+// Determine if two line segments, specified by their endpoints, intersect.
+// line1 and line2 are 4 element vectors formatted as (x1,y1,x2,y2)
+int line_segment_intersect(const arma::vec& point1, const arma::vec& point2,
+                           const arma::vec& point3, const arma::vec& point4);
