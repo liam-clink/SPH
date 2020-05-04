@@ -7,6 +7,7 @@
 #include "boundary.h"
 #include <cfloat>
 #include <algorithm> // for max(a,b)
+#include <cmath>
 
 double dist_to_line(const arma::vec& position,
                     const arma::vec& point1,
@@ -88,30 +89,42 @@ int point_inside_polygon(const arma::vec& point, const arma::mat& vertices)
     int intersections = 0;
     std::cout << "Loop over faces\n";
     // Do a loop over the number of faces
-    for (int i=0; i<vertices.n_cols-1; i++)
+    for (int i=0; i<vertices.n_cols; i++)
     {
         // Check intersection of ray with each edge
         std::cout << "Loop #" << i << std::endl;
+        // The modulo % is used because indices don't have wraparound in arma
         if (line_segment_intersect(start, point,
-                vertices.col(i), vertices.col(i+1)) == 1)
+                vertices.col(i), vertices.col((i+1) % vertices.n_cols)) == 1)
+        {
+            // It is also possible that the ray intersects a vertex, which will
+            // give two intersections, when only one would be expected. First
+            // we check whether the vertex is close to being in between the
+            // endpoints of the segment
+            if ( point_between_points(vertices.col(i), start, point) )
+            {
+                // If the vertex is close to being in between the endpoints of
+                // the segment, we need to consider whether an edge double
+                // count should happen. This solution only works for 2D
+                std::cout << "test1\n";
+                arma::vec vertex1 = vertices.col(
+                        (i-1 + vertices.n_cols) % vertices.n_cols);
+                std::cout << "test2\n";
+                arma::vec vertex2 = vertices.col(i);
+                std::cout << "test3\n";
+                arma::vec vertex3 = vertices.col((i+1) % vertices.n_cols);
+                std::cout << "test4\n";
+                double angle1 = atan2(vertex1(1)-vertex2(1),
+                                      vertex1(0)-vertex2(0));
+                double angle2 = atan2(point(1)-start(1),
+                                      point(0)-start(0));
+                double angle3 = atan2(vertex3(1)-vertex2(1),
+                                      vertex3(0)-vertex2(0));
+                if (std::signbit(angle2-angle1) == std::signbit(angle3-angle2))
+                    intersections++;
+            }
             intersections++;
-    }
-
-    if (line_segment_intersect(start, point,
-                vertices.col(0), vertices.col(vertices.n_cols-1)) == 1)
-        intersections++;
-    
-    // It is also possible that the ray intersects a vertex, which will give
-    // two intersections, when only one would be expected. We also need to make
-    // sure to only count the vertex intersections in between the endpoints of
-    // the line segment.
-    // Check if any vertex is close to the line, and undo the double count
-    for (int i=0; i<vertices.n_cols; i++)
-    {
-        if ( point_between_points(vertices.col(i), start, point) )
-            intersections--;
-        // TODO: But what if the line actually goes through two faces, and
-        // just gets near a vertex?
+        }
     }
 
     if ((intersections & 1) == 1)
