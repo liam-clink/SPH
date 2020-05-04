@@ -75,9 +75,6 @@ int point_inside_polygon(const arma::vec& point, const arma::mat& vertices)
 
     if (point(0)<xmin || point(0)>xmax || point(1)<ymin || point(1)>ymax)
     {
-        std::cout << "Outside of box, xmin: " << xmin << " xmax: "
-            << xmax << " ymin: " << ymin << " ymax: " << ymax << std::endl;
-        point.print();
         return 0;
     }
 
@@ -87,12 +84,10 @@ int point_inside_polygon(const arma::vec& point, const arma::mat& vertices)
     arma::vec start = {xmin-epsilon, ymin-epsilon};
 
     int intersections = 0;
-    std::cout << "Loop over faces\n";
     // Do a loop over the number of faces
     for (int i=0; i<vertices.n_cols; i++)
     {
         // Check intersection of ray with each edge
-        std::cout << "Loop #" << i << std::endl;
         // The modulo % is used because indices don't have wraparound in arma
         if (line_segment_intersect(start, point,
                 vertices.col(i), vertices.col((i+1) % vertices.n_cols)) == 1)
@@ -106,14 +101,10 @@ int point_inside_polygon(const arma::vec& point, const arma::mat& vertices)
                 // If the vertex is close to being in between the endpoints of
                 // the segment, we need to consider whether an edge double
                 // count should happen. This solution only works for 2D
-                std::cout << "test1\n";
                 arma::vec vertex1 = vertices.col(
                         (i-1 + vertices.n_cols) % vertices.n_cols);
-                std::cout << "test2\n";
                 arma::vec vertex2 = vertices.col(i);
-                std::cout << "test3\n";
                 arma::vec vertex3 = vertices.col((i+1) % vertices.n_cols);
-                std::cout << "test4\n";
                 double angle1 = atan2(vertex1(1)-vertex2(1),
                                       vertex1(0)-vertex2(0));
                 double angle2 = atan2(point(1)-start(1),
@@ -133,7 +124,7 @@ int point_inside_polygon(const arma::vec& point, const arma::mat& vertices)
         return 0; // Outside of polygon
 }
 
-// Return 0 if no intersect, 1 if intersect, 2 if intersect vertex, and -1 if collinear
+// Return 0 if no intersect, 1 if intersect, and -1 if collinear
 int line_segment_intersect(const arma::vec& point1, const arma::vec& point2,
                            const arma::vec& point3, const arma::vec& point4)
 {
@@ -156,7 +147,6 @@ int line_segment_intersect(const arma::vec& point1, const arma::vec& point2,
 
     if ( (d1>0 && d2>0) || (d1<0 && d2<0) )
     {
-        std::cout << "First case\n";
         return 0;
     }
 
@@ -172,26 +162,16 @@ int line_segment_intersect(const arma::vec& point1, const arma::vec& point2,
 
     if ( (d1>0 && d2>0) || (d1<0 && d2<0) )
     {
-        std::cout << "Second case\n";
         return 0;
     }
 
-    if ( fabs(d1) < 2*DBL_MIN || fabs(d2) < 2*DBL_MIN )
-    {
-        std::cout << "Vertex intersection 2\n";
-        return 2;
-    }
     // At this point, the line segments either intersect at one point or
     // are collinear, so we also need to test for this possibility.
     if (a1*b2 - a2*b1 == 0.)
     {
-        std::cout << "Collinear\n";
         return -1;
     }
 
-   
-
     // The only remaining possibility is intersection of the lines at one point
-    std::cout << "Intersection\n";
     return 1;
 }
