@@ -9,18 +9,21 @@
 #include <algorithm> // for max(a,b)
 #include <cmath>
 
-double dist_to_line(const arma::vec& position,
-                    const arma::vec& point1,
-                    const arma::vec& point2)
+double dist_to_line_segment(const arma::vec& position,
+                            const arma::vec& point1,
+                            const arma::vec& point2)
 {
-    double numerator = fabs( (point2(1)-point1(1))*position(0)
-                           - (point2(0)-point1(0))*position(1)
-                           + point2(0)*point1(1) - point2(1)*point1(0) );
+    const double length_squared = arma::dot(point1-point2,point1-point2);
+    if (length_squared == 0.0) return arma::norm(position-point1);
 
-    double denominator = sqrt( (point2(1)-point1(1))*(point2(1)-point1(1))
-                             + (point2(0)-point1(0))*(point2(0)-point1(0)) );
-
-    return numerator / denominator;
+    // Consider the line extending the segment, parameterized as v + t (w - v).
+    // We find projection of point p onto the line.
+    // It falls where t = [(p-v) . (w-v)] / |w-v|^2
+    // We clamp t from [0,1] to handle points outside the segment vw.
+    const double dot_product = arma::dot(position-point1,point2-point1);
+    const double t = std::max(0., std::min(1., dot_product/length_squared));
+    const arma::vec projection = point1 + t * (point2 - point1);
+    return arma::norm(position-projection);
 }
 
 int point_between_points(const arma::vec& point1,
@@ -28,29 +31,9 @@ int point_between_points(const arma::vec& point1,
                          const arma::vec& point3)
 {
     double length = arma::norm(point3-point2);
+    double distance = dist_to_line_segment(point1, point2, point3);
     
-    // Check if the lines corresponding to the vectors are close to 
-    // parallel using their cross product
-    
-    arma::vec p3d1, p3d2, p3d3;
-
-    // Convert 2D to 3D
-    if (point1.n_elem == 2)
-    {
-        p3d1 = {point1(0), point1(1), 0.};
-        p3d2 = {point2(0), point2(1), 0.};
-        p3d3 = {point3(0), point3(1), 0.};
-    }
-    else
-    {
-        p3d1 = point1;
-        p3d2 = point2;
-        p3d3 = point3;
-    }
-
-    double cross_product = arma::norm(arma::cross(p3d1-p3d2, p3d3-p3d2));
-
-    if ( cross_product > 1e-6*length )
+    if ( distance > 1e-6*length )
         return 0;
 
     // Check that the vector corresponding to the point is in the right
@@ -65,6 +48,7 @@ int point_between_points(const arma::vec& point1,
     return 1;
 }
 
+//TODO: fix vertex intersection bug
 int point_inside_polygon(const arma::vec& point, const arma::mat& vertices)
 {
     // First do a coarse test using the bounding rectangle
@@ -92,6 +76,7 @@ int point_inside_polygon(const arma::vec& point, const arma::mat& vertices)
         if (line_segment_intersect(start, point,
                 vertices.col(i), vertices.col((i+1) % vertices.n_cols)) == 1)
         {
+            /*
             // It is also possible that the ray intersects a vertex, which will
             // give two intersections, when only one would be expected. First
             // we check whether the vertex is close to being in between the
@@ -112,8 +97,14 @@ int point_inside_polygon(const arma::vec& point, const arma::mat& vertices)
                 double angle3 = atan2(vertex3(1)-vertex2(1),
                                       vertex3(0)-vertex2(0));
                 if (std::signbit(angle2-angle1) == std::signbit(angle3-angle2))
+                {
+                    std::cout << "angle1: " << angle1/3.14*180 << " angle2: "
+                        << angle2/3.14*180 << " angle3: " << angle3/3.14*180
+                        << " x: " << point(0) << " y: " << point(1)
+                        << " i: " << i << std::endl;
                     intersections++;
-            }
+                }
+            }*/
             intersections++;
         }
     }

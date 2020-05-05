@@ -1,0 +1,4 @@
+test1 used intersections++ if the signs of the atan2 were the same
+test2 used continue if the signs of the atan2 were opposite
+test3 didn't do vertex detection
+

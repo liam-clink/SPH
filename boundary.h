@@ -14,9 +14,9 @@
 // by its endpoints, using geometry. Imagine a triangle made by the position
 // and the endpoints of the line. The numerator is twice the area
 // of the triangle, and the denominator is the length of the line.
-double dist_to_line(const arma::vec& position,
-                    const arma::vec& point1,
-                    const arma::vec& point2);
+double dist_to_line_segment(const arma::vec& position,
+                            const arma::vec& point1,
+                            const arma::vec& point2);
 
 // Test if a point is between two other points. This is useful for checking
 // if a ray in raycasting intersects a vertex

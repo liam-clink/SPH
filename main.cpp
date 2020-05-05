@@ -1,24 +1,57 @@
 // Author: Liam Clink <clink.6@osu.edu>
 //
 
+#include "simulation.h"
 #include "boundary.h"
 #include <iostream>
+#include <fstream>
 
 int main()
 {
-    
     arma::arma_rng::set_seed_random();
-    arma::vec point = {0.5,0.5};
-    arma::mat vertices = {{0.1,0.1},
-                          {0.9,0.1},
-                          {0.9,0.9},
-                          {0.1,0.9}};
+    arma::mat temp = {{0.0,0.6},
+                      {0.3,0.2},
+                      {0.7,0.0},
+                      {1.0,0.3},
+                      {0.8,0.6},
+                      {0.75,1.0},
+                      {0.4,0.5},
+                      {0.2,0.9}};
 
-    point.print();
-    vertices.print();
+    arma::mat vertices = temp.t();
+    vertices.save("vertices.dat",arma::raw_ascii);
+    
+    double spacing = 0.01;
+    double xmin = arma::min(vertices.row(0));
+    double xmax = arma::max(vertices.row(0));
+    double ymin = arma::min(vertices.row(1));
+    double ymax = arma::max(vertices.row(1));
+    
+    std::ofstream file;
+    file.open("boundary.dat");
+    
+    arma::vec point;
 
-    int test = point_inside_polygon(point, vertices.t());
-    std::cout << "The point is: " << test << std::endl;
+    for (double x = xmin-5.*spacing; x <= xmax+5.*spacing; x += spacing)
+    {
+        for (double y = ymin-5.*spacing; y <= ymax+5.*spacing; y += spacing)
+        {
+            point = {x,y};
+            if (point_inside_polygon(point, vertices) == 0)
+            {
+                for (int i = 0; i<vertices.n_cols; i++)
+                {
+                    if (dist_to_line_segment(point, vertices.col(i),
+                        vertices.col((i+1) % vertices.n_cols)) <= 5.*spacing)
+                    {
+                        file << point(0) << '\t' << point(1) << '\n';
+                    }
+                }
+            }
+        }
+    }
+
+    file.close();
 
     return 0;
 }
