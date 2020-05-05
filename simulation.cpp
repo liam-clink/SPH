@@ -32,17 +32,59 @@ Simulation::Simulation()
     std::cout << "Height: " << this->height
         << " Width: " << this->width << std::endl;
 
+    // Hardcoded vertices
+    arma::mat temp = {{0.0,0.6},
+                      {0.3,0.2},
+                      {0.7,0.0},
+                      {1.0,0.3},
+                      {0.8,0.6},
+                      {0.75,1.0},
+                      {0.4,0.5},
+                      {0.2,0.9}};
+    
+    this->bounding_box = temp.t();
+    double xmin = arma::min(this->bounding_box.row(0));
+    double xmax = arma::max(this->bounding_box.row(0));
+    double ymin = arma::min(this->bounding_box.row(1));
+    double ymax = arma::max(this->bounding_box.row(1));
+    
+    arma::vec point;
+
+    this->spacing = 0.01;
+    for (double x = xmin-5.*spacing; x <= xmax+5.*spacing; x += spacing)
+    {
+        for (double y = ymin-5.*spacing; y <= ymax+5.*spacing; y += spacing)
+        {
+            point = {x,y};
+            if (point_inside_polygon(point, this->bounding_box) == 0)
+            {
+                for (int i = 0; i<this->bounding_box.n_cols; i++)
+                {
+                    double distance = dist_to_line_segment(point,
+                            this->bounding_box.col(i),
+                            this->bounding_box.col((i+1)
+                                %this->bounding_box.n_cols));
+                    if ( distance <= 5.*spacing )
+                    {
+                        this->boundary.push_back(SPHParticle());
+                        this->boundary.back().position = point;
+                    }
+                }
+            }
+        }
+    }
+
     // For now, simulation bounding box will be hardcoded. In future,
     // this will be input via a file.
 
-    /*
-    // Get number of particles and initialize particle_list
+    
+    // Get number of particles and initialize particles
     unsigned int particle_num;
     tokens = next_line();
     if (tokens[0] != "particle_num")
         throw std::invalid_argument("line 2 is not particle_num");
     particle_num = stoi(tokens[1]);
-    this->particle_list = std::vector<SPHParticle>(particle_num);
+    this->particles = std::vector<SPHParticle>(particle_num);
     std::cout << "Number of Particles: " << particle_num << std::endl;
 
     std::default_random_engine generator;
@@ -51,13 +93,13 @@ Simulation::Simulation()
     // Fill particle list
     for (unsigned int i=0; i<particle_num; i++)
     {
-        particle_list[i] = SPHParticle();
-        particle_list[i].position = 
+        particles[i] = SPHParticle();
+        particles[i].position = 
             { this->width*distribution(generator),
               this->height*distribution(generator) };
-        particle_list[i].velocity = {0.,0.};
+        particles[i].velocity = {0.,0.};
     }
-    */
+    
 
     // Set up directories for data dumping
     system("mkdir -p data/positions");
@@ -142,11 +184,11 @@ int Simulation::dump_state()
     // Output position data
     this->os.open("data/positions/"+step_string+".csv");
 
-    for (int i=0; i<this->particle_list.size(); i++)
+    for (int i=0; i<this->particles.size(); i++)
     {
         os << i << ','
-           << this->particle_list[i].position[0] << ','
-           << this->particle_list[i].position[1] << std::endl;
+           << this->particles[i].position[0] << ','
+           << this->particles[i].position[1] << std::endl;
     }
     
     os.close();
@@ -154,11 +196,11 @@ int Simulation::dump_state()
     // Output velocity data
     this->os.open("data/velocities/"+step_string+".csv");
 
-    for (int i=0; i<this->particle_list.size(); i++)
+    for (int i=0; i<this->particles.size(); i++)
     {
         os << i << ','
-           << this->particle_list[i].velocity[0] << ','
-           << this->particle_list[i].velocity[1] << std::endl;
+           << this->particles[i].velocity[0] << ','
+           << this->particles[i].velocity[1] << std::endl;
     }
     os.close();
 

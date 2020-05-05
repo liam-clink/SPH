@@ -26,3 +26,9 @@ but I have to stop now to turn in what I have.
 The primary files that you should read are simulation.cpp and simulation.h,
 as pretty much all of the currently used code is there. However, I have
 started work on the kernel.h and kernel.cpp, which is required for SPH.
+
+# Update
+I have added the generation of an arbitrary boundary layer of dummy particles.
+This took quite a lot more effort than I expected as well, so unfortunately
+I do not have fluid moving yet, but hopefully you can appreciate the complexity
+achieved already.

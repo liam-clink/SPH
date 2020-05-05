@@ -25,13 +25,15 @@ public:
     int run();
 
 private:
-    std::vector<SPHParticle> particle_list;
+    std::vector<SPHParticle> particles;
     double width, height;
     unsigned int step = 0;
     unsigned int max_step;
     double dt;
     double duration;
     arma::mat bounding_box;
+    double spacing;
+    std::vector<SPHParticle> boundary;
     // The reason for using "Nodes" is that it allows the simulation to
     // dynamically add any members as necessary, instead of allocating all
     // possible members. A root node does need to be declared, and then
