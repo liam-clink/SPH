@@ -32,6 +32,10 @@ Simulation::Simulation()
     std::cout << "Height: " << this->height
         << " Width: " << this->width << std::endl;
 
+    // For now, simulation bounding box will be hardcoded. In future,
+    // this will be input via a file.
+
+    /*
     // Get number of particles and initialize particle_list
     unsigned int particle_num;
     tokens = next_line();
@@ -41,7 +45,6 @@ Simulation::Simulation()
     this->particle_list = std::vector<SPHParticle>(particle_num);
     std::cout << "Number of Particles: " << particle_num << std::endl;
 
-    // Random number generation, for sampling particles uniformly in space
     std::default_random_engine generator;
     std::uniform_real_distribution<double> distribution(0.,1.);
     
@@ -54,6 +57,7 @@ Simulation::Simulation()
               this->height*distribution(generator) };
         particle_list[i].velocity = {0.,0.};
     }
+    */
 
     // Set up directories for data dumping
     system("mkdir -p data/positions");

@@ -8,15 +8,6 @@
 
 int main()
 {
-    arma::arma_rng::set_seed_random();
-    arma::mat temp = {{0.0,0.6},
-                      {0.3,0.2},
-                      {0.7,0.0},
-                      {1.0,0.3},
-                      {0.8,0.6},
-                      {0.75,1.0},
-                      {0.4,0.5},
-                      {0.2,0.9}};
 
     arma::mat vertices = temp.t();
     vertices.save("vertices.dat",arma::raw_ascii);
