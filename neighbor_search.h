@@ -5,6 +5,7 @@
 #pragma once
 #include <vector>
 #include <array>
+#include "particle.h"
 
 // The grid structure for tracking neighbors
 // On construction, calculate bounding box and determine cell size
@@ -14,14 +15,14 @@
 class Grid
 {
     double cell_size;
-    std::array<double,2*DIM> coordinate_limits;
-    
+    std::array<double, 2 * DIM> coordinate_limits;
+
     // List of pointers with each pointer going to the first particle
     // in the cell, represented either by a block of an array or a
     // linked list
 
 public:
-    std::vector<Particle>& particles;
+    std::vector<Particle> &particles;
 };
 
 // Take in grid and sort particles according to the cell

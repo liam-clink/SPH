@@ -1,3 +1,6 @@
+# Dependencies
+armadillo
+
 # Usage
 Currently only meant to be run on Linux.
 
