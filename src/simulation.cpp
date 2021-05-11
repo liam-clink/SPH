@@ -207,3 +207,12 @@ int Simulation::dump_state()
     return 0;
 }
 
+
+// Index sorting
+
+
+// Z tree sorting
+
+
+// Compact Hashing
+//
