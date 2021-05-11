@@ -9,6 +9,13 @@
 #include <algorithm> // for max(a,b)
 #include <cmath>
 
+/*
+Calculate the distance from a point to a line specified
+by its endpoints, using geometry. 
+Consider a triangle made by the point and the endpoints of the
+line. The numerator is twice the area of the triangle, and the
+denominator is the length of the line.
+*/
 double dist_to_line_segment(const arma::vec& position,
                             const arma::vec& point1,
                             const arma::vec& point2)
@@ -24,28 +31,6 @@ double dist_to_line_segment(const arma::vec& position,
     const double t = std::max(0., std::min(1., dot_product/length_squared));
     const arma::vec projection = point1 + t * (point2 - point1);
     return arma::norm(position-projection);
-}
-
-int point_between_points(const arma::vec& point1,
-                         const arma::vec& point2,
-                         const arma::vec& point3)
-{
-    double length = arma::norm(point3-point2);
-    double distance = dist_to_line_segment(point1, point2, point3);
-    
-    if ( distance > 1e-6*length )
-        return 0;
-
-    // Check that the vector corresponding to the point is in the right
-    // direction and has the right length for the point to be close to
-    // the line
-    double dot_product = arma::dot(point3-point2, point1-point2);
-    if (dot_product < 0 || dot_product > length*length)
-        return 0;
-
-    // The only remaining possibility is that the first point is very
-    // close to being in between the other two points
-    return 1;
 }
 
 //TODO: fix vertex intersection bug

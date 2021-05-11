@@ -10,19 +10,11 @@
 #include <armadillo>
 #include <cmath>
 
-// Calculate the distance from a position to a line specified
-// by its endpoints, using geometry. Imagine a triangle made by the position
-// and the endpoints of the line. The numerator is twice the area
-// of the triangle, and the denominator is the length of the line.
+// Calculate the distance from a point to a line specified
+// by its endpoints, using geometry. 
 double dist_to_line_segment(const arma::vec& position,
                             const arma::vec& point1,
                             const arma::vec& point2);
-
-// Test if a point is between two other points. This is useful for checking
-// if a ray in raycasting intersects a vertex
-int point_between_points(const arma::vec& point1,
-                         const arma::vec& point2,
-                         const arma::vec& point3);
 
 // Use raycasting to determine whether a point is inside a polygon
 int point_inside_polygon(const arma::vec& point, const arma::mat& vertices);
