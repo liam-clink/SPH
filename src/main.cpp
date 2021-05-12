@@ -2,9 +2,7 @@
 //
 
 #include "simulation.h"
-#include "boundary.h"
 #include <iostream>
-#include <fstream>
 
 int main()
 {
