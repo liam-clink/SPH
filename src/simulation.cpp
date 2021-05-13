@@ -67,20 +67,33 @@ Simulation::Simulation()
         << " Width: " << this->width << std::endl;
 
     // Hardcoded vertices
-    arma::mat temp = {{0.0,0.6},
-                      {0.3,0.2},
-                      {0.7,0.0},
-                      {1.0,0.3},
-                      {0.8,0.6},
-                      {0.75,1.0},
-                      {0.4,0.5},
-                      {0.2,0.9}};
+    std::vector<arma::vec> temp = {{0.0,0.6},
+                                     {0.3,0.2},
+                                     {0.7,0.0},
+                                     {1.0,0.3},
+                                     {0.8,0.6},
+                                     {0.75,1.0},
+                                     {0.4,0.5},
+                                     {0.2,0.9}};
     
-    this->bounding_box = temp.t();
-    double xmin = arma::min(this->bounding_box.row(0));
-    double xmax = arma::max(this->bounding_box.row(0));
-    double ymin = arma::min(this->bounding_box.row(1));
-    double ymax = arma::max(this->bounding_box.row(1));
+    Polygon domain(temp);
+    
+    double xmin = domain.vertices[0](0);
+    double xmax = xmin;
+    double ymin = domain.vertices[0](1);
+    double ymax = ymin;
+    
+    for (auto vertex : domain.vertices)
+    {
+        if (vertex(0) < xmin)
+            xmin = vertex(0);
+        else if (vertex(0) > xmax)
+            xmax = vertex(0);
+        if (vertex(1) < ymin)
+            ymin = vertex(1);
+        else if (vertex(1) > ymax)
+            ymax = vertex(1);
+    }
     
     arma::vec point;
 
@@ -90,14 +103,17 @@ Simulation::Simulation()
         for (double y = ymin-5.*spacing; y <= ymax+5.*spacing; y += spacing)
         {
             point = {x,y};
-            if (point_inside_polygon(point, this->bounding_box) == 0)
+            if (point_inside_polygon(point, this->domain) == 0)
             {
-                for (int i = 0; i<this->bounding_box.n_cols; i++)
+                for (int i = 0; i<this->domain.vertices.size(); i++)
                 {
-                    double distance = dist_to_line_segment(point,
-                            this->bounding_box.col(i),
-                            this->bounding_box.col((i+1)
-                                %this->bounding_box.n_cols));
+                    double distance = dist_to_line_segment(
+                        point,
+                        Line_Segment(
+                            this->domain.vertices[i],
+                            this->domain.vertices[(i+1)
+                                %this->domain.vertices.size()]));
+
                     if ( distance <= 5.*spacing )
                     {
                         this->boundary.push_back(SPHParticle());

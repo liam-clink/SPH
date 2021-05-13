@@ -59,7 +59,7 @@ private:
     unsigned int max_step;
     double dt;
     double duration;
-    arma::mat bounding_box;
+    Polygon domain;
     double spacing;
     std::vector<SPHParticle> boundary;
 
