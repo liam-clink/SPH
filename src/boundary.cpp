@@ -89,19 +89,13 @@ bool point_inside_polygon(const arma::vec& point, const Polygon& polygon)
             Line_Segment(polygon.vertices[i],
                          polygon.vertices[(i+1) % polygon.vertices.size()])))
         {
-            /*
             // It is also possible that the ray intersects a vertex, which will
-            // give two intersections, when only one would be expected. First
-            // we check whether the vertex is close to being in between the
-            // endpoints of the segment
-            if ( point_between_points(vertices.col(i), start, point) )
-            {
-                
-            }*/
+            // give two intersections, when only one would be expected sometimes
             intersections++;
         }
     }
 
+    // Check if number of intersections is odd
     if ((intersections & 1) == 1)
         return true; // Inside of polygon
     else
