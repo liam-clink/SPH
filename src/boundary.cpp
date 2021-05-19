@@ -4,10 +4,16 @@
 // Implementation of the boundary.h header
 //
 
-#include "boundary.h"
+#include "../include/boundary.h"
 #include <cfloat>
 #include <algorithm> // for max(a,b) and max_element()
 #include <cmath>
+
+Line_Segment::Line_Segment(arma::vec _start, arma::vec _end)
+{
+    start = _start;
+    end = _end;
+}
 
 // Construct polygon from sequence of vertices
 Polygon::Polygon(std::vector<arma::vec> _vertices)
@@ -79,11 +85,10 @@ bool point_inside_polygon(const arma::vec& point, const Polygon& polygon)
     for (int i=0; i<polygon.vertices.size(); i++)
     {
         // Choose ray to be horizontal to the left
-        ray.start = {xmin, polygon.vertices[i](1)}; // May need to shift xmin
-        ray.end = point;
+        ray.start = point; 
+        ray.end = {xmin, point(1)}; // May need to shift xmin
 
         // Check intersection of ray with each edge
-        // The modulo % is used because indices don't have wraparound in arma
         if (line_segment_intersect(
             ray,
             Line_Segment(polygon.vertices[i],
@@ -103,7 +108,7 @@ bool point_inside_polygon(const arma::vec& point, const Polygon& polygon)
 }
 
 // Return 0 if no intersect, 1 if intersect, and -1 if collinear
-bool line_segment_intersect(const Line_Segment& segment1,
+int line_segment_intersect(const Line_Segment& segment1,
                             const Line_Segment& segment2)
 {
     // Convert line segment 1 (endpoint1 to endpoint2) to a line of infinite
@@ -146,6 +151,7 @@ bool line_segment_intersect(const Line_Segment& segment1,
 
     // At this point, the line segments either intersect at one point or
     // are collinear, so we also need to test for this possibility.
+    // TODO: This returns even if the line segments have no overlap, fix
     if (a1*b2 - a2*b1 == 0.)
     {
         return -1;

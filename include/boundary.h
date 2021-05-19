@@ -36,5 +36,5 @@ bool point_inside_polygon(const arma::vec& point, const Polygon& polygon);
 
 // Determine if two line segments, specified by their endpoints, intersect.
 // line1 and line2 are 4 element vectors formatted as (x1,y1,x2,y2)
-bool line_segment_intersect(const Line_Segment& segment1,
+int line_segment_intersect(const Line_Segment& segment1,
                             const Line_Segment& segment2);
