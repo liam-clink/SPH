@@ -51,7 +51,7 @@ double dist_to_line_segment(const arma::vec& point, const Line_Segment& segment)
 //TODO: fix vertex intersection bug
 bool point_inside_polygon(const arma::vec& point, const Polygon& polygon)
 {
-    // First do a coarse test using the bounding rectangle
+    // Determine bounding rectangle
     double xmin = polygon.vertices[0](0);
     double xmax = xmin;
     double ymin = polygon.vertices[0](1);
@@ -69,33 +69,86 @@ bool point_inside_polygon(const arma::vec& point, const Polygon& polygon)
             ymax = vertex(1);
     }
 
+    // Is point in bounding rectangle?
     if (point(0)<xmin || point(0)>xmax || point(1)<ymin || point(1)>ymax)
     {
         return false;
     }
 
-    // At this stage, the point is at least inside the bounding box. Start
-    // raycasting by choosing a point outside the bounding box to start the ray.
+    // At this stage, the point is at least inside the bounding box.
+    // Now ray casting is done to check whether point is inside.
     // It is simpler to check vertex intersection if ray is horizontal or
-    // vertical.
-    Line_Segment ray;
+    // vertical. I choose the ray to be horizontal to the right.
 
     int intersections = 0;
+    Line_Segment edge;
     // Do a loop over the number of edges
     for (int i=0; i<polygon.vertices.size(); i++)
     {
-        // Choose ray to be horizontal to the left
-        ray.start = point; 
-        ray.end = {xmin, point(1)}; // May need to shift xmin
-
-        // Check intersection of ray with each edge
-        if (line_segment_intersect(
-            ray,
-            Line_Segment(polygon.vertices[i],
-                         polygon.vertices[(i+1) % polygon.vertices.size()])))
+        // TODO: faster if changed to move constructor
+        edge = Line_Segment(polygon.vertices[i],
+            polygon.vertices[(i+1) % polygon.vertices.size()]);
+        
+        // Do a bunch of fast checks of trivial conditions
+        if ((point(0) >= edge.start(0)) && (point(0) >= edge.end(0)))
         {
-            // It is also possible that the ray intersects a vertex, which will
-            // give two intersections, when only one would be expected sometimes
+            // The point is to the right of the edge
+            continue;
+        }
+        if ((point(1) > edge.start(1)) && (point(1) > edge.end(1)))
+        {
+            // The point is above the edge
+            continue;
+        }
+        if ((point(1) < edge.start(1)) && (point(1) < edge.end(1)))
+        {
+            // The point is below the edge
+            continue;
+        }
+        /*
+        if (point(1) == edge.start(1))
+        {
+            // The point intersects the start vertex. If the vertex were
+            // shifted up slightly, would this cause an intersection?
+            // Shifting up or down doesn't matter as long as it is consistent.
+            // The case of start == end is excluded because horizontal lines
+            // can be ignored.
+            if (edge.start(1) > edge.end(1)) intersections++;
+            else continue;
+        }
+        if (point(1) == edge.end(1))
+        {
+            // The point intersects the end vertex, similar to above.
+            if (edge.end(1) > edge.start(1)) intersections++;
+            else continue;
+        }*/
+
+        if ((point(0) < edge.start(0)) && (point(0) < edge.end(0)))
+        {
+            // The point is to the left of the edge, in between top and bottom,
+            // and so the ray definitely intersects the edge
+            intersections++;
+        }
+
+        // Now all that is left is the possibility that the point is inside
+        // the bounding box of the edge, which is not horizontal. So we need
+        // to determine which side of the line the point is.
+
+        // Convert the edge to a line of infinite length in linear equation
+        // standard form: Ax + By + C = 0. The equivalent in higher dimensions
+        // is calculating the intersection of a hyperplane with the ray.
+        double a = edge.end(1) - edge.start(1);
+        double b = edge.start(0) - edge.end(0);
+        double c = edge.end(0)*edge.start(1) - edge.start(0)*edge.end(1);
+
+        if ((edge.end(1) > edge.start(1)) && (a*point(0)+b*point(1)+c > 0))
+        {
+            // The point is on the left side of an edge with positive slope
+            intersections++;
+        }
+        else if ((edge.end(1) < edge.start(1)) && (a*point(0)+b*point(1)+c < 0))
+        {
+            // The point is on the left side of an edge with negative slope
             intersections++;
         }
     }
@@ -109,12 +162,12 @@ bool point_inside_polygon(const arma::vec& point, const Polygon& polygon)
 
 // Return 0 if no intersect, 1 if intersect, and -1 if collinear
 int line_segment_intersect(const Line_Segment& segment1,
-                            const Line_Segment& segment2)
+                           const Line_Segment& segment2)
 {
     // Convert line segment 1 (endpoint1 to endpoint2) to a line of infinite
     // length in linear equation standard form: Ax + By + C = 0. The equivalent
-    // in higher dimensions is calculating the intersection of a hyperplane with
-    // the ray.
+    // in higher dimensions is calculating the intersection of a hyperplane
+    // with the ray.
     double a1 = segment1.end(1) - segment1.start(1);
     double b1 = segment1.start(0) - segment1.end(0);
     double c = segment1.end(0)*segment1.start(1) 
