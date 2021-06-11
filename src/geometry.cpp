@@ -1,10 +1,10 @@
-// File: boundary.cpp
+// File: geometry.cpp
 // Author: Liam Clink <clink.6@osu.edu>
 //
-// Implementation of the boundary.h header
+// Implementation of the geometry.h header
 //
 
-#include "../include/boundary.h"
+#include "geometry.h"
 #include <cfloat>
 #include <algorithm> // for max(a,b) and max_element()
 #include <cmath>
@@ -28,7 +28,8 @@ Consider a triangle made by the point and the endpoints of the
 line. The numerator is twice the area of the triangle, and the
 denominator is the length of the line.
 */
-double dist_to_line_segment(const arma::vec& point, const Line_Segment& segment)
+double distance_to_line_segment(const arma::vec& point,
+                                const Line_Segment& segment)
 {
     const double length_squared =
         arma::dot(segment.end - segment.start, segment.end - segment.start);
@@ -48,7 +49,7 @@ double dist_to_line_segment(const arma::vec& point, const Line_Segment& segment)
     return arma::norm(point - projection);
 }
 
-//TODO: fix vertex intersection bug
+
 bool point_inside_polygon(const arma::vec& point, const Polygon& polygon)
 {
     // Determine bounding rectangle
@@ -69,13 +70,13 @@ bool point_inside_polygon(const arma::vec& point, const Polygon& polygon)
             ymax = vertex(1);
     }
 
-    /*
+    
     // Is point in bounding rectangle?
     if (point(0)<xmin || point(0)>xmax || point(1)<ymin || point(1)>ymax)
     {
         return false;
     }
-*/
+
     // At this stage, the point is at least inside the bounding box.
     // Now ray casting is done to check whether point is inside.
     // It is simpler to check vertex intersection if ray is horizontal or
@@ -94,19 +95,16 @@ bool point_inside_polygon(const arma::vec& point, const Polygon& polygon)
         if ((point(0) >= edge.start(0)) && (point(0) >= edge.end(0)))
         {
             // The point is to the right of the edge
-            std::cout << "The point is to the right of edge: " << i << '\n';
             continue;
         }
         if ((point(1) > edge.start(1)) && (point(1) > edge.end(1)))
         {
             // The point is above the edge
-            std::cout << "The point is above the edge: " << i << '\n';
             continue;
         }
         if ((point(1) < edge.start(1)) && (point(1) < edge.end(1)))
         {
             // The point is below the edge
-            std::cout << "The point is below the edge: " << i << '\n';
             continue;
         }
         
@@ -117,14 +115,12 @@ bool point_inside_polygon(const arma::vec& point, const Polygon& polygon)
             // Shifting up or down doesn't matter as long as it is consistent.
             // The case of start == end is excluded because horizontal lines
             // can be ignored.
-            std::cout << "The ray intersects start vertex of edge: " << i << '\n';
             if (edge.start(1) > edge.end(1)) intersections++;
             else continue;
         }
         if (point(1) == edge.end(1))
         {
             // The point intersects the end vertex, similar to above.
-            std::cout << "The ray intersects end vertex of edge: " << i << '\n';
             if (edge.end(1) > edge.start(1)) intersections++;
             else continue;
         }
@@ -133,7 +129,6 @@ bool point_inside_polygon(const arma::vec& point, const Polygon& polygon)
         {
             // The point is to the left of the edge, in between top and bottom,
             // and so the ray definitely intersects the edge
-            std::cout << "The point is to the left of the edge in between top and bottom: " << i << '\n';
             intersections++;
             continue;
         }

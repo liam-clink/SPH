@@ -6,7 +6,7 @@
 //
 
 #include "simulation.h"
-#include "boundary.h"
+#include "geometry.h"
 #include <typeinfo>
 #include <fstream>
 #include <stdexcept>

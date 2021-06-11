@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "boundary.h"
+#include "geometry.h"
 #include "particle.h"
 #include "kernel.h"
 #include <vector>

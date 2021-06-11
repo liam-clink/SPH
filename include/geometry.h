@@ -1,5 +1,5 @@
 // File: boundary.h
-// Author: Liam Clink <clink.6@osu.edu
+// Author: Liam Clink <clink.6@osu.edu>
 //
 // This file defines functions that are useful for enforcing
 // boundary conditions
