@@ -62,6 +62,7 @@ private:
     Polygon domain;
     double spacing;
     std::vector<SPHParticle> boundary;
+    double boundary_thickness;
 
     int dump_state();
     std::ifstream is;

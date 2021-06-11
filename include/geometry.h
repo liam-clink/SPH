@@ -1,4 +1,4 @@
-// File: boundary.h
+// File: geometry.h
 // Author: Liam Clink <clink.6@osu.edu>
 //
 // This file defines functions that are useful for enforcing
@@ -28,7 +28,7 @@ struct Polygon
 
 // Calculate the distance from a point to a line specified
 // by its endpoints, using geometry. 
-double dist_to_line_segment(const arma::vec& point,
+double distance_to_line_segment(const arma::vec& point,
                             const Line_Segment& segment);
 
 // Use raycasting to determine whether a point is inside a polygon

@@ -46,7 +46,7 @@ public:
 
 
 
-// Make constructor able to take terminal or file input
+//TODO: Make constructor able to take terminal or file input
 Simulation::Simulation()
 {
     is.open("input.txt");
@@ -66,17 +66,46 @@ Simulation::Simulation()
     std::cout << "Height: " << height
         << " Width: " << width << std::endl;
 
-    // Hardcoded vertices
-    std::vector<arma::vec> temp = {{0.0,0.6},
-                                     {0.3,0.2},
-                                     {0.7,0.0},
-                                     {1.0,0.3},
-                                     {0.8,0.6},
-                                     {0.75,1.0},
-                                     {0.4,0.5},
-                                     {0.2,0.9}};
-    
-    Polygon domain(temp);
+    // Get number of particles and initialize particles
+    tokens = next_line();
+    if (tokens[0] != "particle_num")
+        throw std::invalid_argument("line 2 is not particle_num");
+    unsigned int particle_num = stoi(tokens[1]);
+    particles = std::vector<SPHParticle>(particle_num);
+    std::cout << "Number of Particles: " << particle_num << std::endl;
+
+    // Set up time
+    tokens = next_line();
+    if (tokens[0] != "timestep")
+        throw std::invalid_argument("line 3 is not timestep");
+    dt = stod(tokens[1]);
+    std::cout << "Timestep: " << dt << ' ';
+
+    tokens = next_line();
+    if (tokens[0] != "duration")
+        throw std::invalid_argument("line 4 is not duration");
+    duration = stod(tokens[1]);
+    std::cout << "Duration: " << duration << '\n';
+    max_step = int(duration/dt);
+
+    is.close();
+
+    // Read in vertices of polygon boundary
+    Polygon domain;
+
+    is.open("boundary.txt");
+    do
+    {
+        tokens = next_line();
+        domain.vertices.push_back(arma::vec(tokens[0]+' '+tokens[1]));
+    } while(tokens.empty() == false);
+    is.close();
+
+    std::cout << "Vertices of the bounding polygon: \n";
+    for (int i = 0; i<domain.vertices.size(); i++)
+    {
+        std::cout << domain.vertices[i](0) << domain.vertices[i](1) << '\n';
+    }
     
     double xmin = domain.vertices[0](0);
     double xmax = xmin;
@@ -107,14 +136,14 @@ Simulation::Simulation()
             {
                 for (int i = 0; i<domain.vertices.size(); i++)
                 {
-                    double distance = dist_to_line_segment(
+                    double distance = distance_to_line_segment(
                         point,
                         Line_Segment(
                             domain.vertices[i],
                             domain.vertices[(i+1)
                                 %domain.vertices.size()]));
 
-                    if ( distance <= 5.*spacing )
+                    if ( distance <= boundary_thickness*spacing )
                     {
                         boundary.push_back(SPHParticle());
                         boundary.back().position = point;
@@ -128,14 +157,7 @@ Simulation::Simulation()
     // this will be input via a file.
 
     
-    // Get number of particles and initialize particles
-    unsigned int particle_num;
-    tokens = next_line();
-    if (tokens[0] != "particle_num")
-        throw std::invalid_argument("line 2 is not particle_num");
-    particle_num = stoi(tokens[1]);
-    particles = std::vector<SPHParticle>(particle_num);
-    std::cout << "Number of Particles: " << particle_num << std::endl;
+    // Initialize particles
 
     std::default_random_engine generator;
     std::uniform_real_distribution<double> distribution(0.,1.);
@@ -156,18 +178,6 @@ Simulation::Simulation()
     system("mkdir -p data/positions");
     system("mkdir -p data/velocities");
 
-    // Set up time
-    tokens = next_line();
-    if (tokens[0] != "timestep")
-        throw std::invalid_argument("line 3 is not timestep");
-    dt = stod(tokens[1]);
-    tokens = next_line();
-    if (tokens[0] != "duration")
-        throw std::invalid_argument("line 4 is not duration");
-    duration = stod(tokens[1]);
-    max_step = int(duration/dt);
-
-    is.close();
 }
 
 
@@ -207,6 +217,7 @@ std::vector<std::string> Simulation::next_line()
         else
             break;
     }
+    //TODO: Need to throw error if end of file is reached
 
     // Tokenize the line
     std::string delimiter = " ";
