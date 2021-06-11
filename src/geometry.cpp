@@ -77,7 +77,7 @@ bool point_inside_polygon(const arma::vec& point, const Polygon& polygon)
         return false;
     }
 
-    // At this stage, the point is at least inside the bounding box.
+    // At this stage, the point is at least inside the bounding rectangle.
     // Now ray casting is done to check whether point is inside.
     // It is simpler to check vertex intersection if ray is horizontal or
     // vertical. I choose the ray to be horizontal to the right.

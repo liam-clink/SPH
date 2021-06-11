@@ -56,15 +56,15 @@ Simulation::Simulation()
     tokens = next_line();
     if (tokens[0] != "height")
         throw std::invalid_argument("line 0 is not height");
-    this->height = std::stod(tokens[1]);
+    height = std::stod(tokens[1]);
 
     tokens = next_line();
     if (tokens[0] != "width")
         throw std::invalid_argument("line 1 is not width");
-    this->width = std::stod(tokens[1]);
+    width = std::stod(tokens[1]);
 
-    std::cout << "Height: " << this->height
-        << " Width: " << this->width << std::endl;
+    std::cout << "Height: " << height
+        << " Width: " << width << std::endl;
 
     // Hardcoded vertices
     std::vector<arma::vec> temp = {{0.0,0.6},
@@ -97,27 +97,27 @@ Simulation::Simulation()
     
     arma::vec point;
 
-    this->spacing = 0.01;
+    spacing = 0.01;
     for (double x = xmin-5.*spacing; x <= xmax+5.*spacing; x += spacing)
     {
         for (double y = ymin-5.*spacing; y <= ymax+5.*spacing; y += spacing)
         {
             point = {x,y};
-            if (point_inside_polygon(point, this->domain) == 0)
+            if (point_inside_polygon(point, domain) == 0)
             {
-                for (int i = 0; i<this->domain.vertices.size(); i++)
+                for (int i = 0; i<domain.vertices.size(); i++)
                 {
                     double distance = dist_to_line_segment(
                         point,
                         Line_Segment(
-                            this->domain.vertices[i],
-                            this->domain.vertices[(i+1)
-                                %this->domain.vertices.size()]));
+                            domain.vertices[i],
+                            domain.vertices[(i+1)
+                                %domain.vertices.size()]));
 
                     if ( distance <= 5.*spacing )
                     {
-                        this->boundary.push_back(SPHParticle());
-                        this->boundary.back().position = point;
+                        boundary.push_back(SPHParticle());
+                        boundary.back().position = point;
                     }
                 }
             }
@@ -134,7 +134,7 @@ Simulation::Simulation()
     if (tokens[0] != "particle_num")
         throw std::invalid_argument("line 2 is not particle_num");
     particle_num = stoi(tokens[1]);
-    this->particles = std::vector<SPHParticle>(particle_num);
+    particles = std::vector<SPHParticle>(particle_num);
     std::cout << "Number of Particles: " << particle_num << std::endl;
 
     std::default_random_engine generator;
@@ -145,13 +145,14 @@ Simulation::Simulation()
     {
         particles[i] = SPHParticle();
         particles[i].position = 
-            { this->width*distribution(generator),
-              this->height*distribution(generator) };
+            { width*distribution(generator),
+              height*distribution(generator) };
         particles[i].velocity = {0.,0.};
     }
     
 
     // Set up directories for data dumping
+    //TODO: Make system agnostic
     system("mkdir -p data/positions");
     system("mkdir -p data/velocities");
 
@@ -159,20 +160,20 @@ Simulation::Simulation()
     tokens = next_line();
     if (tokens[0] != "timestep")
         throw std::invalid_argument("line 3 is not timestep");
-    this->dt = stod(tokens[1]);
+    dt = stod(tokens[1]);
     tokens = next_line();
     if (tokens[0] != "duration")
         throw std::invalid_argument("line 4 is not duration");
-    this->duration = stod(tokens[1]);
-    this->max_step = int(duration/dt);
+    duration = stod(tokens[1]);
+    max_step = int(duration/dt);
 
-    this->is.close();
+    is.close();
 }
 
 
 int Simulation::run()
 {
-    for(this->step=0; this->step<this->max_step; this->step++)
+    for(step=0; step<max_step; step++)
     {
         dump_state();
 
@@ -187,7 +188,7 @@ int Simulation::run()
 
 Simulation::~Simulation()
 {
-    this->os.close();
+    os.close();
     std::cout << "Done!" << std::endl;
 }
 
@@ -200,7 +201,7 @@ std::vector<std::string> Simulation::next_line()
     std::string line;
     while(true)
     {
-        std::getline(this->is,line);
+        std::getline(is,line);
         if (line.length() == 0 || line[0] == '#')
             continue;
         else
@@ -227,30 +228,30 @@ std::vector<std::string> Simulation::next_line()
 int Simulation::dump_state()
 {
     // Do zero filling for filename
-    std::string step_string = std::to_string(this->step);
+    std::string step_string = std::to_string(step);
     step_string.insert(step_string.begin(),
-            log10(this->max_step)+1 - step_string.length(), '0');
+            log10(max_step)+1 - step_string.length(), '0');
 
     // Output position data
-    this->os.open("data/positions/"+step_string+".csv");
+    os.open("data/positions/"+step_string+".csv");
 
-    for (int i=0; i<this->particles.size(); i++)
+    for (int i=0; i<particles.size(); i++)
     {
         os << i << ','
-           << this->particles[i].position[0] << ','
-           << this->particles[i].position[1] << std::endl;
+           << particles[i].position[0] << ','
+           << particles[i].position[1] << std::endl;
     }
     
     os.close();
 
     // Output velocity data
-    this->os.open("data/velocities/"+step_string+".csv");
+    os.open("data/velocities/"+step_string+".csv");
 
-    for (int i=0; i<this->particles.size(); i++)
+    for (int i=0; i<particles.size(); i++)
     {
         os << i << ','
-           << this->particles[i].velocity[0] << ','
-           << this->particles[i].velocity[1] << std::endl;
+           << particles[i].velocity[0] << ','
+           << particles[i].velocity[1] << std::endl;
     }
     os.close();
 
