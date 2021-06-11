@@ -69,12 +69,13 @@ bool point_inside_polygon(const arma::vec& point, const Polygon& polygon)
             ymax = vertex(1);
     }
 
+    /*
     // Is point in bounding rectangle?
     if (point(0)<xmin || point(0)>xmax || point(1)<ymin || point(1)>ymax)
     {
         return false;
     }
-
+*/
     // At this stage, the point is at least inside the bounding box.
     // Now ray casting is done to check whether point is inside.
     // It is simpler to check vertex intersection if ray is horizontal or
@@ -88,24 +89,27 @@ bool point_inside_polygon(const arma::vec& point, const Polygon& polygon)
         // TODO: faster if changed to move constructor
         edge = Line_Segment(polygon.vertices[i],
             polygon.vertices[(i+1) % polygon.vertices.size()]);
-        
+
         // Do a bunch of fast checks of trivial conditions
         if ((point(0) >= edge.start(0)) && (point(0) >= edge.end(0)))
         {
             // The point is to the right of the edge
+            std::cout << "The point is to the right of edge: " << i << '\n';
             continue;
         }
         if ((point(1) > edge.start(1)) && (point(1) > edge.end(1)))
         {
             // The point is above the edge
+            std::cout << "The point is above the edge: " << i << '\n';
             continue;
         }
         if ((point(1) < edge.start(1)) && (point(1) < edge.end(1)))
         {
             // The point is below the edge
+            std::cout << "The point is below the edge: " << i << '\n';
             continue;
         }
-        /*
+        
         if (point(1) == edge.start(1))
         {
             // The point intersects the start vertex. If the vertex were
@@ -113,21 +117,25 @@ bool point_inside_polygon(const arma::vec& point, const Polygon& polygon)
             // Shifting up or down doesn't matter as long as it is consistent.
             // The case of start == end is excluded because horizontal lines
             // can be ignored.
+            std::cout << "The ray intersects start vertex of edge: " << i << '\n';
             if (edge.start(1) > edge.end(1)) intersections++;
             else continue;
         }
         if (point(1) == edge.end(1))
         {
             // The point intersects the end vertex, similar to above.
+            std::cout << "The ray intersects end vertex of edge: " << i << '\n';
             if (edge.end(1) > edge.start(1)) intersections++;
             else continue;
-        }*/
+        }
 
         if ((point(0) < edge.start(0)) && (point(0) < edge.end(0)))
         {
             // The point is to the left of the edge, in between top and bottom,
             // and so the ray definitely intersects the edge
+            std::cout << "The point is to the left of the edge in between top and bottom: " << i << '\n';
             intersections++;
+            continue;
         }
 
         // Now all that is left is the possibility that the point is inside
@@ -137,18 +145,20 @@ bool point_inside_polygon(const arma::vec& point, const Polygon& polygon)
         // Convert the edge to a line of infinite length in linear equation
         // standard form: Ax + By + C = 0. The equivalent in higher dimensions
         // is calculating the intersection of a hyperplane with the ray.
+        
         double a = edge.end(1) - edge.start(1);
         double b = edge.start(0) - edge.end(0);
         double c = edge.end(0)*edge.start(1) - edge.start(0)*edge.end(1);
 
-        if ((edge.end(1) > edge.start(1)) && (a*point(0)+b*point(1)+c > 0))
+        // The normal vector for the segment is (a,b) so we dot product the
+        // separation of the point from a vertex with the normal, and also
+        // check whether the normal vector is in the +x or -x direction,
+        // and we only count an intersection when the dot product and the x
+        // component of the normal vector are opposite
+        if ((std::signbit((point(0)-edge.start(0))*a
+                         + (point(1)-edge.start(1))*b) > 0)
+            xor (std::signbit(a) > 0))
         {
-            // The point is on the left side of an edge with positive slope
-            intersections++;
-        }
-        else if ((edge.end(1) < edge.start(1)) && (a*point(0)+b*point(1)+c < 0))
-        {
-            // The point is on the left side of an edge with negative slope
             intersections++;
         }
     }
