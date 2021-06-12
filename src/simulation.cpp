@@ -96,9 +96,10 @@ Simulation::Simulation()
     is.open("boundary.txt");
     do
     {
+        printf("Debug 1\n");
         tokens = next_line();
         domain.vertices.push_back(arma::vec(tokens[0]+' '+tokens[1]));
-    } while(tokens.empty() == false);
+    } while(!is.eof());
     is.close();
 
     std::cout << "Vertices of the bounding polygon: \n";
@@ -106,6 +107,7 @@ Simulation::Simulation()
     {
         std::cout << domain.vertices[i](0) << domain.vertices[i](1) << '\n';
     }
+
     
     double xmin = domain.vertices[0](0);
     double xmax = xmin;
@@ -209,7 +211,7 @@ std::vector<std::string> Simulation::next_line()
 {
     // Find the next line that isn't a comment
     std::string line;
-    while(true)
+    while(!is.eof())
     {
         std::getline(is,line);
         if (line.length() == 0 || line[0] == '#')
