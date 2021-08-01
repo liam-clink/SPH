@@ -3,3 +3,4 @@
 *.json
 .idea/*
 __pycache__/*
+debug.out
