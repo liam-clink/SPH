@@ -1,3 +1,5 @@
 *.x
 *.csv
 *.json
+.idea/*
+__pycache__/*
