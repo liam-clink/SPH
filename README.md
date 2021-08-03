@@ -35,3 +35,9 @@ I have added the generation of an arbitrary boundary layer of dummy particles.
 This took quite a lot more effort than I expected as well, so unfortunately
 I do not have fluid moving yet, but hopefully you can appreciate the complexity
 achieved already.
+
+# Update
+Next I need to implement an interpolation function, given the particle list
+for fields sampled by the particles. Each particle has a scale value and a
+position, in combination with a kernel function. There is a gradient kernel
+as well, that needs to be sorted out.
