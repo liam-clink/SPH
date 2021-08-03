@@ -51,6 +51,7 @@ public:
     ~Simulation();
 
     int run();
+    int sample_density(int x_samples, int y_samples);
 
 private:
     std::vector<SPHParticle> particles;

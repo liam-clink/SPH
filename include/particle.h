@@ -15,7 +15,7 @@ struct Particle
 
 struct SPHParticle : Particle
 {
-    double density;
+    double mass;
     double range;
     double pressure;
 };

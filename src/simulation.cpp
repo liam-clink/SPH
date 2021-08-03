@@ -11,6 +11,7 @@
 #include <fstream>
 #include <stdexcept>
 #include <cmath> // for zero filling
+#include <iomanip>
 
 /*
 // The grid structure for tracking neighbors
@@ -182,6 +183,11 @@ Simulation::Simulation()
 
 }
 
+Simulation::~Simulation()
+{
+    os.close();
+    std::cout << "Done!" << std::endl;
+}
 
 int Simulation::run()
 {
@@ -197,13 +203,55 @@ int Simulation::run()
     return 0;
 }
 
-
-Simulation::~Simulation()
+int Simulation::sample_density(int x_samples, int y_samples)
 {
-    os.close();
-    std::cout << "Done!" << std::endl;
-}
+    if (x_samples == 0 or y_samples == 0)
+        throw std::invalid_argument("Either x_samples or y_samples is nonzero");
 
+    std::ofstream os;
+    try
+    {
+        os.open("density.tsv");
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
+    
+    // Set output mode to scientific
+    os << std::scientific;
+
+    // TODO: Add file header
+
+    // Add up density contributions from all particles
+    // TODO: Add nearest neighbor functionality
+    double dx = this->width / x_samples;
+    double dy = this->height / y_samples;
+    double x = 0;
+    double y = 0;
+    double density = 0;
+
+    // TODO: may want to change output formatting to be conformant to numpy
+    for (int i=0; i++; i<x_samples)
+    {
+        for (int j=0; j++; j<y_samples)
+        {
+            // Loop through particles
+            for (int n=0; n++; n<this->particles.size())
+            {
+                //density += particles[n].mass*sph_kernel(particles[n].position-(x,y),particles[n].range);
+            }
+            os << std::setprecision(15) << density << '\t';
+            y += dy;
+        }
+        os << '\n';
+        x += dx;
+    }
+
+    
+
+    os.close();
+}
 
 // Filter out comment lines, skips through file until a non-comment line
 // is reached
