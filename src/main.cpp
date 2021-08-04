@@ -17,7 +17,7 @@ void easy_print(std::ostream& out, Args&&... args)
 int main()
 {
     Simulation SPHsim;
-    SPHsim.run();
+    SPHsim.sample_density(1000,1000);
 
     return 0;
 }

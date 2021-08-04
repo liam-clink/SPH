@@ -97,7 +97,6 @@ Simulation::Simulation()
     is.open("boundary.txt");
     do
     {
-        printf("Debug 1\n");
         tokens = next_line();
         domain.vertices.push_back(arma::vec(tokens[0]+' '+tokens[1]));
     } while(!is.eof());
@@ -156,7 +155,7 @@ Simulation::Simulation()
         }
     }
 
-    // For now, simulation bounding box will be hardcoded. In future,
+    // TODO: For now, simulation bounding box will be hardcoded. In future,
     // this will be input via a file.
 
     
@@ -173,6 +172,8 @@ Simulation::Simulation()
             { width*distribution(generator),
               height*distribution(generator) };
         particles[i].velocity = {0.,0.};
+        particles[i].range = 5.;
+        particles[i].mass = 1.;
     }
     
 
@@ -218,39 +219,49 @@ int Simulation::sample_density(int x_samples, int y_samples)
         std::cerr << e.what() << '\n';
     }
     
+    os << "density.tsv\n";
+    os << std::to_string(x_samples) << '\t' << std::to_string(y_samples) <<'\n';
+    os << std::to_string(width) << '\t' << std::to_string(height) <<'\n';
+
     // Set output mode to scientific
     os << std::scientific;
 
-    // TODO: Add file header
-
     // Add up density contributions from all particles
     // TODO: Add nearest neighbor functionality
-    double dx = this->width / x_samples;
-    double dy = this->height / y_samples;
-    double x = 0;
-    double y = 0;
+    double dx = width / (double)x_samples;
+    double dy = height / (double)y_samples;
+    double x;
+    double y;
     double density = 0;
+    double distance;
 
     // TODO: may want to change output formatting to be conformant to numpy
-    for (int i=0; i++; i<x_samples)
+    x = 0.;
+    for (int i=0; i<x_samples; i++)
     {
-        for (int j=0; j++; j<y_samples)
+        y = 0.;
+        for (int j=0; j<y_samples; j++)
         {
             // Loop through particles
-            for (int n=0; n++; n<this->particles.size())
+            for (int n=0; n<particles.size(); n++)
             {
-                //density += particles[n].mass*sph_kernel(particles[n].position-(x,y),particles[n].range);
+                distance = arma::norm(particles[n].position 
+                    - arma::vec({x,y}), 2);
+                //std::cout << distance << '\t' << x << '\t' << y << '\n';
+                density += particles[n].mass
+                    * cubic_sph_kernel_2d(distance / particles[n].range);
             }
             os << std::setprecision(15) << density << '\t';
+            density = 0;
             y += dy;
         }
         os << '\n';
         x += dx;
     }
-
-    
-
+    os << std::flush;
     os.close();
+
+    return 0;
 }
 
 // Filter out comment lines, skips through file until a non-comment line

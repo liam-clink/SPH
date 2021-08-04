@@ -18,9 +18,9 @@
 // q is the scaled distance. q=1 is the range of influence.
 double cubic_sph_kernel_2d(double q)
 {
-    if (0 <= q <= 0.5)
+    if (0. <= q <= 0.5)
         return 10. / (3.*PI) * (1. - 6. * (q*q - q*q*q));
-    else if (q <= 1)
+    else if (q <= 1.)
         return 20. / (3.*PI) * (1. - q) * (1. - q) * (1. - q);
     else
         return 0.;
@@ -28,9 +28,9 @@ double cubic_sph_kernel_2d(double q)
 
 double cubic_sph_kernel_3d(double q)
 {
-    if (0 <= q <= 0.5)
+    if (0. <= q <= 0.5)
         return 8. / PI * (1. - 6. * (q*q - q*q*q));
-    else if (q <= 1)
+    else if (q <= 1.)
         return 16. / PI * (1. - q) * (1. - q) * (1. - q);
     else
         return 0.;
@@ -38,10 +38,10 @@ double cubic_sph_kernel_3d(double q)
 
 arma::vec gradient_cubic_sph_kernel_2d(double q, arma::vec q_hat)
 {
-    if (0 <= q <= 0.5)
-        return 8./PI * (-12*q*q + 18*q*q*q) * q_hat;
+    if (0. <= q <= 0.5)
+        return 8./PI * (-12.*q*q + 18.*q*q*q) * q_hat;
     else if (q <= 1.)
-        return -48./PI * (1-q)*(1-q) * q_hat;
+        return -48./PI * (1.-q)*(1.-q) * q_hat;
     else
         return 0.*q_hat;
 }
