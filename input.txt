@@ -1,5 +1,3 @@
-height 10
-width 20
 particle_num 1000
 
 timestep 0.1

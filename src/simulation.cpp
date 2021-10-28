@@ -53,24 +53,10 @@ Simulation::Simulation()
     is.open("input.txt");
     std::vector<std::string> tokens;
 
-    // Initialize simulation box
-    tokens = next_line();
-    if (tokens[0] != "height")
-        throw std::invalid_argument("line 0 is not height");
-    height = std::stod(tokens[1]);
-
-    tokens = next_line();
-    if (tokens[0] != "width")
-        throw std::invalid_argument("line 1 is not width");
-    width = std::stod(tokens[1]);
-
-    std::cout << "Height: " << height
-        << " Width: " << width << std::endl;
-
     // Get number of particles and initialize particles
     tokens = next_line();
     if (tokens[0] != "particle_num")
-        throw std::invalid_argument("line 2 is not particle_num");
+        throw std::invalid_argument("line 0 is not particle_num");
     unsigned int particle_num = stoi(tokens[1]);
     particles = std::vector<SPHParticle>(particle_num);
     std::cout << "Number of Particles: " << particle_num << std::endl;
@@ -78,13 +64,13 @@ Simulation::Simulation()
     // Set up time
     tokens = next_line();
     if (tokens[0] != "timestep")
-        throw std::invalid_argument("line 3 is not timestep");
+        throw std::invalid_argument("line 1 is not timestep");
     dt = stod(tokens[1]);
     std::cout << "Timestep: " << dt << ' ';
 
     tokens = next_line();
     if (tokens[0] != "duration")
-        throw std::invalid_argument("line 4 is not duration");
+        throw std::invalid_argument("line 2 is not duration");
     duration = stod(tokens[1]);
     std::cout << "Duration: " << duration << '\n';
     max_step = int(duration/dt);
@@ -105,7 +91,7 @@ Simulation::Simulation()
     std::cout << "Vertices of the bounding polygon: \n";
     for (int i = 0; i<domain.vertices.size(); i++)
     {
-        std::cout << domain.vertices[i](0) << domain.vertices[i](1) << '\n';
+        std::cout << domain.vertices[i](0) << '\t' << domain.vertices[i](1) << '\n';
     }
 
     
@@ -125,6 +111,9 @@ Simulation::Simulation()
         else if (vertex(1) > ymax)
             ymax = vertex(1);
     }
+
+    width = xmax-xmin;
+    height = ymax-ymin;
     
     arma::vec point;
 
@@ -155,9 +144,6 @@ Simulation::Simulation()
         }
     }
 
-    // TODO: For now, simulation bounding box will be hardcoded. In future,
-    // this will be input via a file.
-
     
     // Initialize particles
 
@@ -168,11 +154,18 @@ Simulation::Simulation()
     for (unsigned int i=0; i<particle_num; i++)
     {
         particles[i] = SPHParticle();
-        particles[i].position = 
-            { width*distribution(generator),
-              height*distribution(generator) };
+        
+        point = {width*distribution(generator) + xmin,
+                 height*distribution(generator) + ymin};
+        while(!point_inside_polygon(point, domain))
+        {
+            point = {width*distribution(generator) + xmin,
+                     height*distribution(generator) + ymin};
+        }
+
+        particles[i].position = point;
         particles[i].velocity = {0.,0.};
-        particles[i].range = 5.;
+        particles[i].range = .1;
         particles[i].mass = 1.;
     }
     
@@ -204,10 +197,11 @@ int Simulation::run()
     return 0;
 }
 
+//TODO: Add saving of coordinates
 int Simulation::sample_density(int x_samples, int y_samples)
 {
     if (x_samples == 0 or y_samples == 0)
-        throw std::invalid_argument("Either x_samples or y_samples is nonzero");
+        throw std::invalid_argument("Either x_samples or y_samples is zero");
 
     std::ofstream os;
     try
